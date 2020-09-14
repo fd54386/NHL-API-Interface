@@ -22,9 +22,19 @@ library(jsonlite)
 ## Write functions to contact the NHL Records API  
 ```{r Parsed Franchise}
 #function returns id, first seasonid, and last seasonid and name of every team in the history of the NHL
-
 #https://records.nhl.com/site/api/franchise/ 
+#Filter by common name
+#https://records.nhl.com/site/api/franchise?cayenneExp=teamCommonName=%22Wanderers%22
+#Filter by franchise ID
 
+
+fBase<- "https://records.nhl.com/site/api/"
+fEndpoint<- "franchise"
+fCallURL<- paste(fBase,fEndpoint, sep="")
+fRawJSON<- GET(fCallURL)
+fJSON_text<- content(fRawJSON, "text")
+fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
+fDF <- as.data.frame(fParsedText)
 
 ```
 
