@@ -1,11 +1,70 @@
 ---
 title: "Untitled"
-output: github_document
+output: github_document:
+    toc: true
+    toc_depth: 3
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+Link to githup repository  
+
+## Required Packages  
+
+```{r setup packages results='hide'}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+```
+
+## Write functions to contact the NHL Records API  
+```{r Parsed Franchise}
+#function returns id, first seasonid, and last seasonid and name of every team in the history of the NHL
+
+#https://records.nhl.com/site/api/franchise/ 
+
+
+```
+
+```{r Parsed team totals}
+#function Returns total stats for every franchise (ex roadTies, roadWins, etc)
+#/franchise-team-totals Total stats for every franchise (ex roadTies, roadWins, etc)
+#https://records.nhl.com/site/api/franchise-team-totals
+
+```
+
+```{r Parsed Franchise Season Records}
+#season records for a specific franchise
+#https://records.nhl.com/site/api/franchise-season-records?cayenneExp=franchiseId=ID
+
+#example query
+#/franchise-season-results?cayenneExp=franchiseId=24&sort=seasonId&dir=DESC Returns every season result for a specified team, sorted by seasonId in descending order
+
+```
+
+```{r Parsed Goalie Records}
+#Goalie records for the specified franchise 
+
+#/franchise-goalie-records?cayenneExp=franchiseId=ID
+```
+
+
+```{r Parsed Skater Records}
+#/franchise-skater-records?cayenneExp=franchiseId=ID Skater records, same interaction as goalie endpoint
+
+```
+
+```{r Stats API All}
+#You should have a function to return parsed data for the following endpoint from the stats API(the user should be able to specify values for any of the eight modifiers listed):∗https://statsapi.web.nhl.com/api/v1/teams
+```
+
+```{r One-Stop-Wrapper Function}
+```
+
+##Example Analysis
+
 
 ## GitHub Documents
 
