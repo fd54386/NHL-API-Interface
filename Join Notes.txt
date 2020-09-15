@@ -1,0 +1,3 @@
+franTotals FranchiseID != franchise ID
+franTotals FranchiseID != franchise mostrecentteamID
+franTotalsteamID== franchise mostrecentteamID, but we're missing 19 retired teams

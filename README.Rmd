@@ -21,53 +21,82 @@ library(jsonlite)
 
 ## Write functions to contact the NHL Records API  
 Note -- to help with ease of tracking variable scope -- function arguments have the letter 'a' for a prefix, variables local to the function have an 'f' for a prefix.  Global variables have a 'g' prefix.
-```{r Filter Function}
-#Expectation is for each of these functions to be able to take a team name and team ID
-#Have two different formats for this things (stats and records APIs)
-#Define one function to call, return a list of two outputs 
-#first formatted for records, second formatted for stats
+```{r Filter Functions}
 
-defineRecFilter<- function(aName = "", aNumber = "", ...)
+convertNameToNumber<- function(aName = "")
 {
-  #initialize function variable
-fCayenneExp= ""
 
-#If we have a name input, filter for it
-if(aName != ""){
-  fCayenneExp = paste("teamCommonName=\"", aName,"\"", sep="")
+  fNumber<- ""
+  #If we have a name input, translate it to an ID with an API call
+  if(aName != ""){
+    fTeamList<- as_tibble(getFranchiseInfo())%>%filter(data.teamCommonName == aName)
+    fNumber<- toString(fTeamList$data.mostRecentTeamId[1])
+    #fNumber is "NA" if the team name did not exist. restore to being an empty string for silent error
+    fNumber<- sub("NA", "", fNumber)
   }
 
-#If we have a number input, regardless of a name input, filter for it.
-if(toString(aNumber) != ""){
-  #If we already have a condition on fCayenneExp, add an ampersand (pull for both name and number)
-  if(fCayenneExp != "") fCayenneExp <- paste(fCayenneExp, "&", sep="")
-  
-  #Regardless of needing the ampersand, Update filter for number since it was not null
-  fCayenneExp <- paste(fCayenneExp, "mostRecentTeamId=", toString(aNumber), sep="")
-  }
-
-#If we have either filter string, add the literal 'cayenneExp' prefix to the variable
-#otherwise the whole string stays an empty ""
-if(fCayenneExp != "") fCayenneExp<- paste("?cayenneExp=", fCayenneExp, sep = "")
-  
-  return(fCayenneExp)
+  return(fNumber)
 }
+
+#Takes the final TeamID number and if it exists, formats for calls against NHL Records API
+formatRecFilter_1<- function(aNumber){
+  if(aNumber != "") return(paste0("?cayenneExp=mostRecentTeamId=",aNumber))
+  else return ("")
+}
+
+formatRecFilter_2<- function(aNumber){
+  if(aNumber != "") return(paste0("?cayenneExp=TeamId=",aNumber))
+  else return ("")
+}
+
+#Takes the final TeamID number and if it exists, formats for calls against NHL Stats API 
+formatStatFilter<- function(aNumber){
+    if(aNumber != "") return(paste0("/",aNumber))
+  else return ("")
+}
+
+#Process name and number inputs for minimal function evaluation
+#Identical to evalRecCommons, different output str format
+evalStatCommons<- function(aName="", aNumber = ""){
+  if(aNumber=="") {
+    if(aName=="") return("")
+    else fNumber <- convertNameToNumber(aName)
+  }
+  else fNumber <- aNumber
+  return(formatStatFilter(fNumber))
+  
+}
+#Process name and number inputs for minimal function evaluation
+#Identical to evalStatCommons, different output str format
+evalRecCommons_1<- function(aName="", aNumber = ""){
+    if(aNumber=="") {
+     if(aName=="") return("")
+      else fNumber <- convertNameToNumber(aName)
+  }
+  else fNumber <- aNumber
+  return(formatRecFilter_1(fNumber))
+}
+
+evalRecCommons_2<- function(aName="", aNumber = ""){
+    if(aNumber=="") {
+     if(aName=="") return("")
+      else fNumber <- convertNameToNumber(aName)
+  }
+  else fNumber <- aNumber
+  return(formatRecFilter_2(fNumber))
+}
+
 
 ```
 
 ```{r Parsed Franchise}
-#input options for franchise common name and franchise team id number
+#input options for franchise common name and franchise team id number, number runs slightly faster
 #function returns id, first seasonid, and last seasonid and name of every team in the history of the NHL
-#https://records.nhl.com/site/api/franchise/ 
-#Filter by common name
-#https://records.nhl.com/site/api/franchise?cayenneExp=teamCommonName=%22Wanderers%22
-#Filter by franchise ID
-
 getFranchiseInfo<- function(...){
 #Define API url and pull results
 fBase<- "https://records.nhl.com/site/api/"
 fEndpoint<- "franchise"
-fCayenneExp<- defineRecFilter(...)
+fCayenneExp<- evalRecCommons_1(...)
 fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
 print(fCallURL)
 
@@ -82,15 +111,13 @@ return(fDF)
 ```
 
 ```{r Parsed team totals}
-#input options for franchise name and number
+#input options for franchise common name and franchise team id number, number runs slightly faster
 #function Returns total stats for every franchise (ex roadTies, roadWins, etc)
-#/franchise-team-totals Total stats for every franchise (ex roadTies, roadWins, etc)
-#https://records.nhl.com/site/api/franchise-team-totals
 getFranchiseTotals<- function(...){
 #Define API url and pull results
 fBase<- "https://records.nhl.com/site/api/"
 fEndpoint<- "franchise-team-totals"
-fCayenneExp<- defineRecFilter(...)
+fCayenneExp<- evalRecCommons_2(...)
 fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
 print(fCallURL)
 
@@ -114,7 +141,7 @@ getFranchiseSeasonRecords<- function(...){
 #Define API url and pull results
 fBase<- "https://records.nhl.com/site/api/"
 fEndpoint<- "franchise-season-records"
-fCayenneExp<- defineRecFilter(...)
+fCayenneExp<- evalRecCommons(...)
 fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
 print(fCallURL)
 
@@ -135,7 +162,7 @@ getFranchiseGoalieRecords<- function(...){
 #Define API url and pull results
 fBase<- "https://records.nhl.com/site/api/"
 fEndpoint<- "franchise-goalie-records"
-fCayenneExp<- defineRecFilter(...)
+fCayenneExp<- evalRecCommons(...)
 fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
 print(fCallURL)
 
@@ -156,7 +183,7 @@ getFranchiseSkaterRecords<- function(...){
 #Define API url and pull results
 fBase<- "https://records.nhl.com/site/api/"
 fEndpoint<- "franchise-skater-records"
-fCayenneExp<- defineRecFilter(...)
+fCayenneExp<- evalRecCommons(...)
 fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
 print(fCallURL)
 
@@ -172,6 +199,8 @@ return(fDF)
 
 ```{r TestRecordsAPI}
 gdfFranchiseAll<-getFranchiseInfo()
+as_tibble(gdfFranchiseAll)%>% 
+
 gdfFranchiseName<-getFranchiseInfo(aName="Devils")
 gdfFranchiseNumber<-getFranchiseInfo(aNumber=2)
 
@@ -191,6 +220,12 @@ gdfFranSkat<-getFranchiseSkaterRecords()
 gdfFranSkatName<-getFranchiseSkaterRecords(aName="Devils")
 gdfFranSkatNum<-getFranchiseSkaterRecords(aNumber=2)
 
+write.csv(gdfFranchiseAll, "franchise.csv")
+write.csv(gdfFranTotal,"franTotals.csv")
+write.csv(gdfFranSeas,"franSeason.csv")
+write.csv(gdfFranGoal,"franGoalie.csv")
+write.csv(gdfFranSkat, "franSkat.csv")
+
 ```
 ```{r Stats Filter}
 #Need a different filter function for the different API set.
@@ -201,23 +236,32 @@ gdfFranSkatNum<-getFranchiseSkaterRecords(aNumber=2)
 
 #aExpand can take the following values, pulling different summary expansions:
   #"Roster", "EZRoster", "NextSched","PrevSched","Stats", "TeamList",  ""
+  #Note that the TeamList value needs valid teamIDs, and that the common inputs of aName and aNumber supersede this command
 
 #aSeason is a string formatted Y111Y222 restricting the pull to the season of interest.
 #By default, an empty string will pull the current season where applicable
 #Example:  20142015 to refer to the 2014-2015 hockey season.
 
-#aTeams is a comma separated string of teamIDs
+#aTeams is a comma separated string of teamIDs and requires the 'TeamList' expansion instruction 
+#Note that the common inputs of aName and aNumber supersede this field
 #Example: "4,5,29"
 
 getTeamStats<- function(aExpand="", aSeason = "", aTeams = "", ...){
+
+  fTeamStr<- evalStatCommons(...)
   
   #Process aExpand and aTeams where relevant
-  fExpand<- switch(aexpand, "Roster" = "?expand=team.roster", "EZRoster" = "?expand=person.names", 
-         "NextSched" = "?expand=team.schedule.next", "PrevSched" = "?expand=team.schedule.previous", 
-         "Stats" = "?expand=team.stats", "TeamList" = paste("?teamID=", aTeams), ""="")
+  fExpand<- switch(toupper(aexpand), "ROSTER" = "?expand=team.roster", "EZROSTER" = "?expand=person.names", 
+         "NEXTSCHED" = "?expand=team.schedule.next", "PREVSCHED" = "?expand=team.schedule.previous", 
+         "STATS" = "?expand=team.stats", "TEAMLIST" = paste0("?teamId=", aTeams), ""="")
   
   #process aSeason
-  fSeason=if(aSeason!= "") paste("&season=", aSeason)
+  fSeason=if(aSeason != ""){
+    #If we already have a modifier, we need to tack this on with an &
+    if(fExpand!="") paste0("&season=", aSeason)
+    #else we need to use this as a raw modifier
+    else paste0("?season=", aSeason)
+  }
 
   #Define API url and pull results
   fBase<- "https://statsapi.web.nhl.com/api/v1/"
