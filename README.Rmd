@@ -9,7 +9,7 @@ output: github_document:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Link to githup repository  
+Link to github repository  
 
 ## Required Packages  
 
@@ -20,29 +20,88 @@ library(jsonlite)
 ```
 
 ## Write functions to contact the NHL Records API  
+Note -- to help with ease of tracking variable scope -- function arguments have the letter 'a' for a prefix, variables local to the function have an 'f' for a prefix.  Global variables have a 'g' prefix.
+```{r Filter Function}
+#Expectation is for each of these functions to be able to take a team name and team ID
+#Have two different formats for this things (stats and records APIs)
+#Define one function to call, return a list of two outputs 
+#first formatted for records, second formatted for stats
+
+defineFilter<- function(aName = "", aNumber = "", ...)
+{
+  #initialize function variable
+fCayenneExp= ""
+
+#If we have a name input, filter for it
+if(aName != ""){
+  fCayenneExp = paste("franchiseName=", aName, sep="")
+  }
+
+#If we have a number input, regardless of a name input, filter for it.
+if(toString(aNumber) != ""){
+  #If we already have a condition on fCayenneExp, add an ampersand (pull for both name and number)
+  if(fCayenneExp != "") fCayenneExp <- paste(fCayenneExp, "&", sep="")
+  
+  #Regardless of needing the ampersand, Update filter for number since it was not null
+  fCayenneExp <- paste(fCayenneExp, "franchiseId=", toString(aNumber), sep="")
+  }
+
+#If we have either filter string, add the literal 'cayenneExp' prefix to the variable
+#otherwise the whole string stays an empty ""
+if(fCayenneExp != "") fCayenneExp<- paste("?cayenneExp=", fCayenneExp, sep = "")
+  
+  return(fCayenneExp)
+}
+
+```
+
 ```{r Parsed Franchise}
+#input options for franchise common name and franchise team id number
 #function returns id, first seasonid, and last seasonid and name of every team in the history of the NHL
 #https://records.nhl.com/site/api/franchise/ 
 #Filter by common name
 #https://records.nhl.com/site/api/franchise?cayenneExp=teamCommonName=%22Wanderers%22
 #Filter by franchise ID
 
-
+getFranchiseInfo<- function(...){
+#Define API url and pull results
 fBase<- "https://records.nhl.com/site/api/"
 fEndpoint<- "franchise"
-fCallURL<- paste(fBase,fEndpoint, sep="")
+fCayenneExp<- defineFilter(...)
+fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
+print(fCallURL)
+
+#Process results into a dataframe and return
 fRawJSON<- GET(fCallURL)
 fJSON_text<- content(fRawJSON, "text")
 fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
 fDF <- as.data.frame(fParsedText)
 
+return(fDF)
+}
 ```
 
 ```{r Parsed team totals}
+#input options for franchise name and number
 #function Returns total stats for every franchise (ex roadTies, roadWins, etc)
 #/franchise-team-totals Total stats for every franchise (ex roadTies, roadWins, etc)
 #https://records.nhl.com/site/api/franchise-team-totals
+getFranchiseTotals<- function(...){
+#Define API url and pull results
+fBase<- "https://records.nhl.com/site/api/"
+fEndpoint<- "franchise-team-totals"
+fCayenneExp<- defineFilter(...)
+fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
+print(fCallURL)
 
+#Process results into a dataframe and return
+fRawJSON<- GET(fCallURL)
+fJSON_text<- content(fRawJSON, "text")
+fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
+fDF <- as.data.frame(fParsedText)
+
+return(fDF)
+}
 ```
 
 ```{r Parsed Franchise Season Records}
@@ -51,18 +110,72 @@ fDF <- as.data.frame(fParsedText)
 
 #example query
 #/franchise-season-results?cayenneExp=franchiseId=24&sort=seasonId&dir=DESC Returns every season result for a specified team, sorted by seasonId in descending order
+getFranchiseSeasonRecords<- function(...){
+#Define API url and pull results
+fBase<- "https://records.nhl.com/site/api/"
+fEndpoint<- "franchise-season-records"
+fCayenneExp<- defineFilter(...)
+fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
+print(fCallURL)
 
+#Process results into a dataframe and return
+fRawJSON<- GET(fCallURL)
+fJSON_text<- content(fRawJSON, "text")
+fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
+fDF <- as.data.frame(fParsedText)
+
+return(fDF)
+}
 ```
 
 ```{r Parsed Goalie Records}
 #Goalie records for the specified franchise 
-
 #/franchise-goalie-records?cayenneExp=franchiseId=ID
+getFranchiseGoalieRecords<- function(...){
+#Define API url and pull results
+fBase<- "https://records.nhl.com/site/api/"
+fEndpoint<- "franchise-goalie-records"
+fCayenneExp<- defineFilter(...)
+fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
+print(fCallURL)
+
+#Process results into a dataframe and return
+fRawJSON<- GET(fCallURL)
+fJSON_text<- content(fRawJSON, "text")
+fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
+fDF <- as.data.frame(fParsedText)
+
+return(fDF)
+}
 ```
 
 
 ```{r Parsed Skater Records}
 #/franchise-skater-records?cayenneExp=franchiseId=ID Skater records, same interaction as goalie endpoint
+getFranchiseSkaterRecords<- function(...){
+#Define API url and pull results
+fBase<- "https://records.nhl.com/site/api/"
+fEndpoint<- "franchise-skater-records"
+fCayenneExp<- defineFilter(...)
+fCallURL<- paste(fBase,fEndpoint,fCayenneExp, sep="")
+print(fCallURL)
+
+#Process results into a dataframe and return
+fRawJSON<- GET(fCallURL)
+fJSON_text<- content(fRawJSON, "text")
+fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
+fDF <- as.data.frame(fParsedText)
+
+return(fDF)
+}
+```
+
+```{r TestRecordsAPI}
+gdfFranchise<-getFranchiseInfo()
+gdfFranTotal<-getFranchiseTotals()
+gdfFranSeas<-getFranchiseSeasonRecords()
+gdfFranGoal<-getFranchiseGoalieRecords()
+gdfFranSkat<-getFranchiseSkaterRecords()
 
 ```
 
