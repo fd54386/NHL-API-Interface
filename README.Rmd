@@ -221,6 +221,19 @@ gdfFranSkatTeam<-getFranchiseSkaterRecords(aTeamID = 2)
 #This version needs to resolve 
 ```
 ```{r Stats API All}
+ProcessExpandArgs<- function(aExpand, aTeams)
+{
+  fExpand<- toupper(aExpand)
+  if(fExpand == "") return("")
+  if(fExpand == "ROSTER") return("?expand=team.roster")
+  if(fExpand == "EZROSTER") return("?expand=person.names")
+  if(fExpand == "NEXTSCHED") return("?expand=team.schedule.next")
+  if(fExpand == "PREVSCHED") return("?expand=team.schedule.previous")
+  if(fExpand == "STATS") return("?expand=team.stats")
+  if(fExpand == "TEAMLIST") return(paste0("?teamId=", aTeams))
+}
+
+
 #You should have a function to return parsed data for the following endpoint from the stats API(the user should be able to specify values for any of the eight modifiers listed):∗https://statsapi.web.nhl.com/api/v1/teams
 
 #aExpand can take the following values, pulling different summary expansions:
@@ -234,23 +247,20 @@ gdfFranSkatTeam<-getFranchiseSkaterRecords(aTeamID = 2)
 #aTeams is a comma separated string of teamIDs and requires the 'TeamList' expansion instruction 
 #Example: "4,5,29"
 #Note that the common inputs of aName, aTeamID, and aFranchiseID supersede this field
-
-getTeamStats<- function(aExpand="", aSeason = "", aTeams = "", aName = "", aTeamID= "", aFranchiseID = ""){
-
-  #Process our inputs.  If any is non-empty, we need to add a query modifier.
-#Need to pull for TeamID
+getTeamStats<- function(aExpand="", aSeason = "", aTeams = "", 
+                        aName = "", aTeamID= "", aFranchiseID = "")
+{
+#Process our inputs.  If any is non-empty, we need to add a query modifier.
+#Check for a common input
 fTeamStr = ""
-if(aName!="" | aTeamID != "" | aFranchiseID !="") fTeamStr <- pullIDDecoder(aName, aTeamID, aFranchiseID)$TeamID
+if(aName!="" | aTeamID != "" | aFranchiseID !="")
+  {fTeamStr <- pullIDDecoder(aName, aTeamID, aFranchiseID)$TeamID}
 #Append the appropriate prefix for this base & endpoint
-if(fTeamStr != "") fTeamStr <-paste0("/",fTeamStr$TeamID)
+if(fTeamStr != "") fTeamStr <-paste0("/",fTeamStr)
 
-fCallURL<- paste0(fBase,fEndpoint,fCayenneExp)
-  
   #Process aExpand and aTeams where relevant
-  fExpand<- switch(toupper(aexpand), "ROSTER" = "?expand=team.roster", "EZROSTER" = "?expand=person.names", 
-         "NEXTSCHED" = "?expand=team.schedule.next", "PREVSCHED" = "?expand=team.schedule.previous", 
-         "STATS" = "?expand=team.stats", "TEAMLIST" = paste0("?teamId=", aTeams), ""="")
-  
+  fExpand<- ProcessExpandArgs(aExpand, aTeams)
+    
   #process aSeason
   fSeason=if(aSeason != ""){
     #If we already have a modifier, we need to tack this on with an &
@@ -293,14 +303,17 @@ gdfTeamStatsb<- getTeamStats(aExpand = "EZRoster")
 gdfTeamStatsc<- getTeamStats(aExpand = "NextSched")
 gdfTeamStatsd<- getTeamStats(aExpand = "PrevSChed")
 gdfTeamStatse<- getTeamStats(aExpand = "Stats")
-gdfTeamStatse<- getTeamStats(aExpand = "Teamslist", aTeams = "4,5,7")
-gdfTeamStatsf<- getTeamStats(aSeason = "20142015")
-gdfTeamStatsg<- getTeamStats(aExpand = "", aSeason = "")
-gdfTeamStatsh<- getTeamStats()
-gdfTeamStatsi<- getTeamStats()
-gdfTeamStatsj<- getTeamStats()
-gdfTeamStatsk<- getTeamStats(aTeamID = "2", aTeams = "4,5,7")
+gdfTeamStatsf<- getTeamStats(aExpand = "Teamlist", aTeams = "4,5,7")
+gdfTeamStatsg<- getTeamStats(aSeason = "20142015")
+gdfTeamStatsh<- getTeamStats(aExpand = "Stats", aSeason = "20142015")
+gdfTeamStatsi<- getTeamStats(aName = "Devils")
+gdfTeamStatsj<- getTeamStats(aFranchiseID = 2)
+gdfTeamStatsk<- getTeamStats(aTeamID = 2)
+gdfTeamStatsl<- getTeamStats(aTeamID = "2", aTeams = "4,5,7")
 
+gdfTeamStatsm<-getTeamStats(aName="Devils")
+gdfTeamStatsn<-getTeamStats(aFranchiseID = 2)
+gdfTeamStatso<-getTeamStats(aTeamID = 2)
 
 
 ```
