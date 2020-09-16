@@ -284,21 +284,22 @@ return(fDF)
 #Example:  20142015 to refer to the 2014-2015 hockey season.
 
 #aTeams is a comma separated string of teamIDs and requires the 'TeamList' expansion instruction 
-#Example: "4,5,29"
+#Example: aTeams = "4,5,29"
 #Note that the common inputs of aName, aTeamID, and aFranchiseID supersede this field
 
 #"Roster", "EZRoster", "NextSched","PrevSched","Stats", "TeamList",  ""
-gdfTeamStats<- getTeamStats(aExpand = "Roster")
-gdfTeamStats<- getTeamStats(aExpand = "Roster")
-gdfTeamStats<- getTeamStats(aExpand = "Roster")
-gdfTeamStats<- getTeamStats(aExpand = "Roster")
-gdfTeamStats<- getTeamStats(aExpand = "Roster")
-gdfTeamStats<- getTeamStats(aSeason = "")
-gdfTeamStats<- getTeamStats(aExpand = "", aSeason = "")
-gdfTeamStats<- getTeamStats()
-gdfTeamStats<- getTeamStats()
-gdfTeamStats<- getTeamStats()
-gdfTeamStats<- getTeamStats(aExpand = "", aTeamID = "2")
+gdfTeamStatsa<- getTeamStats(aExpand = "Roster")
+gdfTeamStatsb<- getTeamStats(aExpand = "EZRoster")
+gdfTeamStatsc<- getTeamStats(aExpand = "NextSched")
+gdfTeamStatsd<- getTeamStats(aExpand = "PrevSChed")
+gdfTeamStatse<- getTeamStats(aExpand = "Stats")
+gdfTeamStatse<- getTeamStats(aExpand = "Teamslist", aTeams = "4,5,7")
+gdfTeamStatsf<- getTeamStats(aSeason = "20142015")
+gdfTeamStatsg<- getTeamStats(aExpand = "", aSeason = "")
+gdfTeamStatsh<- getTeamStats()
+gdfTeamStatsi<- getTeamStats()
+gdfTeamStatsj<- getTeamStats()
+gdfTeamStatsk<- getTeamStats(aTeamID = "2", aTeams = "4,5,7")
 
 
 
