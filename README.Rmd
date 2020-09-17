@@ -342,19 +342,47 @@ pullNHLAPI<- function(aEndpoint = "", ...){
     if(aEndpoint == "FranchiseInfo"){return(getFranchiseInfo(...))}
     if(aEndpoint == "FranchiseTotals"){return(getFranchiseTotals(...))}
     if(aEndpoint == "FranchiseSeasonRecords"){return(getFranchiseSeasonRecords(...))}
-    if(aEndpoint == "FranchiseGoalieRecords"){return(getFranchiseGoaliRecords(...))}
+    if(aEndpoint == "FranchiseGoalieRecords"){return(getFranchiseGoalieRecords(...))}
     if(aEndpoint == "FranchiseSkaterRecords"){return(getFranchiseSkaterRecords(...))}
-    if(aEndpoint == "TeamStats"){return(getTeamStats(...))}
+    if(aEndpoint == "Team"){return(getTeamStats(...))}
 }
   
 pullNHLAPI()
-pullNHLAPI("FranchiseInfo")
+gdfWrapa<- pullNHLAPI("FranchiseInfo")
+gdfWrapb<- pullNHLAPI("FranchiseTotals")
+gdfWrapc<- pullNHLAPI("FranchiseSeasonRecords")
+gdfWrapd<- pullNHLAPI("FranchiseGoalieRecords")
+gdfWrape<- pullNHLAPI("FranchiseSkaterRecords")
+gdfWarpf<- pullNHLAPI("Team",aName = "Devils")
+gdfWarpg<- pullNHLAPI("Team",aTeamID = 2)
+gdfWarph<- pullNHLAPI("Team",aFranchiseID = "2")
+gdfWarpi<- pullNHLAPI("Team")
+gdfWarpf<- pullNHLAPI("Team")
 
 
 ```
 
-##Example Analysis
+##Example Analysis  
+Haven't followed Hockey too much, in my life, but Wayne Gretzky was a household name growing up.  Let's do some exploration to get some context for how good of a player he was.
 
+Do a join -- will join gretzky records with franchise records
+create two new variables -- a) skater gretzky y/n b) some derived stats / games played metric?
+some contingency tables 
+create numerical summaries on a categorical variable
+
+
+
+##Downselect to Gretzky's franchises & plot where he is relative to other skaters.
+##Pull skater data.  Create a y/n for being wayne gretzky 
+
+```{r Analysis}
+gTibGretz<- as_tibble(pullNHLAPI("FranchiseSkaterRecords")) %>% 
+  mutate(ifelse(data.lastName=="Gretzky"))
+
+gGretzRecords<- as_tibble(gdfFranSkat)%>% filter (data.lastName == "Gretzky" & data.firstName == "Wayne")
+gGretzFactor<- as_tibble(gdfFranSkat)%>% filter (data.lastName == "Gretzky" & data.firstName == "Wayne")
+```
+##Join to overall franchise records 
 
 ## GitHub Documents
 
