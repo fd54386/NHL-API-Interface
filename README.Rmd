@@ -314,11 +314,43 @@ gdfTeamStatsl<- getTeamStats(aTeamID = "2", aTeams = "4,5,7")
 gdfTeamStatsm<-getTeamStats(aName="Devils")
 gdfTeamStatsn<-getTeamStats(aFranchiseID = 2)
 gdfTeamStatso<-getTeamStats(aTeamID = 2)
+gdfTeamStatsp<-getTeamStats()
 
 
 ```
 
 ```{r One-Stop-Wrapper Function}
+pullNHLAPI<- function(aEndpoint = "", ...){
+  if(aEndpoint == ""){
+    print("Please rerun with a specific endpoint chosen. Options are: ")
+    print("FranchiseInfo")
+    print("FranchiseTotals")
+    print("FranchiseSeasonRecords")
+    print("FranchiseGoalieRecords")
+    print("FranchiseSkaterRecords")
+    print("Team")
+    print("")
+    print("Common arguments to the queries are:")
+    print("aName - common name of the team from FranchiseInfo pull")
+    print("aTeamID - MostRecentTeamID from the FranchiseInfo pull")
+    print("aFranchiseID - id field from the FranchiseInfo pull.")
+    print("Note 1- aFranchiseID is constant for franchises relocating or changing names")
+    print("Note 2- The \"Team\" Query has additional potential modifiers, please see vignette for more details")
+    print("Vignette URL")
+    return(getFranchiseInfo(...))}
+  
+    if(aEndpoint == "FranchiseInfo"){return(getFranchiseInfo(...))}
+    if(aEndpoint == "FranchiseTotals"){return(getFranchiseTotals(...))}
+    if(aEndpoint == "FranchiseSeasonRecords"){return(getFranchiseSeasonRecords(...))}
+    if(aEndpoint == "FranchiseGoalieRecords"){return(getFranchiseGoaliRecords(...))}
+    if(aEndpoint == "FranchiseSkaterRecords"){return(getFranchiseSkaterRecords(...))}
+    if(aEndpoint == "TeamStats"){return(getTeamStats(...))}
+}
+  
+pullNHLAPI()
+pullNHLAPI("FranchiseInfo")
+
+
 ```
 
 ##Example Analysis
