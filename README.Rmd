@@ -17,6 +17,7 @@ Link to github repository
 library(tidyverse)
 library(httr)
 library(jsonlite)
+library(knitr)
 ```
 
 ## Write functions to contact the NHL Records API  
@@ -65,7 +66,6 @@ if(fCayenneExp != "") fCayenneExp <-paste0("?cayenneExp=id=",fCayenneExp)
 
 #Pull API Data
 fCallURL<- paste0(fBase,fEndpoint,fCayenneExp)
-print(fCallURL)
 
 #Process results into a dataframe and return
 fRawJSON<- GET(fCallURL)
@@ -93,7 +93,6 @@ if(aName!="" | aTeamID != "" | aFranchiseID !="") fCayenneExp <- pullIDDecoder(a
 if(fCayenneExp != "") fCayenneExp <-paste0("?cayenneExp=franchiseId=",fCayenneExp)
 
 fCallURL<- paste0(fBase,fEndpoint,fCayenneExp)
-print(fCallURL)
 
 #Process results into a dataframe and return
 fRawJSON<- GET(fCallURL)
@@ -119,8 +118,6 @@ if(aName!="" | aTeamID != "" | aFranchiseID !="") fCayenneExp <- pullIDDecoder(a
 if(fCayenneExp != "") fCayenneExp <-paste0("?cayenneExp=franchiseId=",fCayenneExp)
 
 fCallURL<- paste0(fBase,fEndpoint,fCayenneExp)
-
-print(fCallURL)
 
 #Process results into a dataframe and return
 fRawJSON<- GET(fCallURL)
@@ -149,8 +146,6 @@ if(fCayenneExp != "") fCayenneExp <-paste0("?cayenneExp=franchiseId=",fCayenneEx
 
 fCallURL<- paste0(fBase,fEndpoint,fCayenneExp)
 
-print(fCallURL)
-
 #Process results into a dataframe and return
 fRawJSON<- GET(fCallURL)
 fJSON_text<- content(fRawJSON, "text")
@@ -177,7 +172,6 @@ if(aName!="" | aTeamID != "" | aFranchiseID !="") fCayenneExp <- pullIDDecoder(a
 if(fCayenneExp != "") fCayenneExp <-paste0("?cayenneExp=franchiseId=",fCayenneExp)
 
 fCallURL<- paste0(fBase,fEndpoint,fCayenneExp)
-print(fCallURL)
 
 #Process results into a dataframe and return
 fRawJSON<- GET(fCallURL)
@@ -250,24 +244,24 @@ ProcessExpandArgs<- function(aExpand, aTeams)
 getTeamStats<- function(aExpand="", aSeason = "", aTeams = "", 
                         aName = "", aTeamID= "", aFranchiseID = "")
 {
-#Process our inputs.  If any is non-empty, we need to add a query modifier.
-#Check for a common input
-fTeamStr = ""
-if(aName!="" | aTeamID != "" | aFranchiseID !="")
-  {fTeamStr <- pullIDDecoder(aName, aTeamID, aFranchiseID)$TeamID}
-#Append the appropriate prefix for this base & endpoint
-if(fTeamStr != "") fTeamStr <-paste0("/",fTeamStr)
-
-  #Process aExpand and aTeams where relevant
-  fExpand<- ProcessExpandArgs(aExpand, aTeams)
-    
-  #process aSeason
-  fSeason=if(aSeason != ""){
-    #If we already have a modifier, we need to tack this on with an &
-    if(fExpand!="") paste0("&season=", aSeason)
-    #else we need to use this as a direct modifier
-    else paste0("?season=", aSeason)
-  }
+  #Process our inputs.  If any is non-empty, we need to add a query modifier.
+  #Check for a common input
+  fTeamStr = ""
+  if(aName!="" | aTeamID != "" | aFranchiseID !="")
+    {fTeamStr <- pullIDDecoder(aName, aTeamID, aFranchiseID)$TeamID}
+  #Append the appropriate prefix for this base & endpoint
+  if(fTeamStr != "") fTeamStr <-paste0("/",fTeamStr)
+  
+    #Process aExpand and aTeams where relevant
+    fExpand<- ProcessExpandArgs(aExpand, aTeams)
+      
+    #process aSeason
+    fSeason=if(aSeason != ""){
+      #If we already have a modifier, we need to tack this on with an &
+      if(fExpand!="") paste0("&season=", aSeason)
+      #else we need to use this as a direct modifier
+      else paste0("?season=", aSeason)
+    }
 
   #Define API url and pull results
   fBase<- "https://statsapi.web.nhl.com/api/v1/"
@@ -282,45 +276,35 @@ if(fTeamStr != "") fTeamStr <-paste0("/",fTeamStr)
   fParsedText <- fromJSON(fJSON_text, flatten = TRUE)
   fDF <- as.data.frame(fParsedText)
 
-return(fDF)
+  return(fDF)
 }
 
-#aExpand can take the following values, pulling different summary expansions:
-  #"Roster", "EZRoster", "NextSched","PrevSched","Stats", "TeamList",  ""
-  #Note that the TeamList value needs valid teamIDs, and that the common inputs of aName and aNumber supersede this command
+#Available for validation
+#gdfTeamStatsa<- getTeamStats(aExpand = "Roster")
+#gdfTeamStatsb<- getTeamStats(aExpand = "EZRoster")
+#gdfTeamStatsc<- getTeamStats(aExpand = "NextSched")
+#gdfTeamStatsd<- getTeamStats(aExpand = "PrevSChed")
+#gdfTeamStatse<- getTeamStats(aExpand = "Stats")
+#gdfTeamStatsf<- getTeamStats(aExpand = "Teamlist", aTeams = "4,5,7")
+#gdfTeamStatsg<- getTeamStats(aSeason = "20142015")
+#gdfTeamStatsh<- getTeamStats(aExpand = "Stats", aSeason = "20142015")
+#gdfTeamStatsi<- getTeamStats(aName = "Devils")
+#gdfTeamStatsj<- getTeamStats(aFranchiseID = 2)
+#gdfTeamStatsk<- getTeamStats(aTeamID = 2)
+#gdfTeamStatsl<- getTeamStats(aTeamID = "2", aTeams = "4,5,7")
 
-#aSeason is a string formatted Y111Y222 restricting the pull to the season of interest.
-#By default, an empty string will pull the current season where applicable
-#Example:  20142015 to refer to the 2014-2015 hockey season.
-
-#aTeams is a comma separated string of teamIDs and requires the 'TeamList' expansion instruction 
-#Example: aTeams = "4,5,29"
-#Note that the common inputs of aName, aTeamID, and aFranchiseID supersede this field
-
-#"Roster", "EZRoster", "NextSched","PrevSched","Stats", "TeamList",  ""
-gdfTeamStatsa<- getTeamStats(aExpand = "Roster")
-gdfTeamStatsb<- getTeamStats(aExpand = "EZRoster")
-gdfTeamStatsc<- getTeamStats(aExpand = "NextSched")
-gdfTeamStatsd<- getTeamStats(aExpand = "PrevSChed")
-gdfTeamStatse<- getTeamStats(aExpand = "Stats")
-gdfTeamStatsf<- getTeamStats(aExpand = "Teamlist", aTeams = "4,5,7")
-gdfTeamStatsg<- getTeamStats(aSeason = "20142015")
-gdfTeamStatsh<- getTeamStats(aExpand = "Stats", aSeason = "20142015")
-gdfTeamStatsi<- getTeamStats(aName = "Devils")
-gdfTeamStatsj<- getTeamStats(aFranchiseID = 2)
-gdfTeamStatsk<- getTeamStats(aTeamID = 2)
-gdfTeamStatsl<- getTeamStats(aTeamID = "2", aTeams = "4,5,7")
-
-gdfTeamStatsm<-getTeamStats(aName="Devils")
-gdfTeamStatsn<-getTeamStats(aFranchiseID = 2)
-gdfTeamStatso<-getTeamStats(aTeamID = 2)
-gdfTeamStatsp<-getTeamStats()
+#gdfTeamStatsm<-getTeamStats(aName="Devils")
+#gdfTeamStatsn<-getTeamStats(aFranchiseID = 2)
+#gdfTeamStatso<-getTeamStats(aTeamID = 2)
+#gdfTeamStatsp<-getTeamStats()
 
 
 ```
 
 ```{r One-Stop-Wrapper Function}
 pullNHLAPI<- function(aEndpoint = "", ...){
+  #If we don't have any inputs, print out instructions
+  #Also pull the default franchise decoder
   if(aEndpoint == ""){
     print("Please rerun with a specific endpoint chosen. Options are: ")
     print("FranchiseInfo")
@@ -346,42 +330,150 @@ pullNHLAPI<- function(aEndpoint = "", ...){
     if(aEndpoint == "FranchiseSkaterRecords"){return(getFranchiseSkaterRecords(...))}
     if(aEndpoint == "Team"){return(getTeamStats(...))}
 }
-  
-pullNHLAPI()
-gdfWrapa<- pullNHLAPI("FranchiseInfo")
-gdfWrapb<- pullNHLAPI("FranchiseTotals")
-gdfWrapc<- pullNHLAPI("FranchiseSeasonRecords")
-gdfWrapd<- pullNHLAPI("FranchiseGoalieRecords")
-gdfWrape<- pullNHLAPI("FranchiseSkaterRecords")
-gdfWarpf<- pullNHLAPI("Team",aName = "Devils")
-gdfWarpg<- pullNHLAPI("Team",aTeamID = 2)
-gdfWarph<- pullNHLAPI("Team",aFranchiseID = "2")
-gdfWarpi<- pullNHLAPI("Team")
-gdfWarpf<- pullNHLAPI("Team")
 
-
+#Available for validation
+#gdfWrap<- pullNHLAPI()
+#gdfWrapa<- pullNHLAPI("FranchiseInfo")
+#gdfWrapb<- pullNHLAPI("FranchiseTotals")
+#gdfWrapc<- pullNHLAPI("FranchiseSeasonRecords")
+#gdfWrapd<- pullNHLAPI("FranchiseGoalieRecords")
+#gdfWrape<- pullNHLAPI("FranchiseSkaterRecords")
+#gdfWrapf<- pullNHLAPI("Team",aName = "Devils")
+#gdfWrapg<- pullNHLAPI("Team",aTeamID = 2)
+#gdfWraph<- pullNHLAPI("Team",aFranchiseID = "2")
+#gdfWrapi<- pullNHLAPI("Team")
+#gdfWrapf<- pullNHLAPI("Team")
 ```
 
 ##Example Analysis  
-Haven't followed Hockey too much, in my life, but Wayne Gretzky was a household name growing up.  Let's do some exploration to get some context for how good of a player he was.
+Haven't followed Hockey too much.  From what I understand, it's mostly about scoring goals and checking people just hard enough that they don't put you in the penalty box.  Wayne Gretzky was a household name growing up.  Let's do some exploration for context about how good of a player he was.  
+
+Data is available in the FranchiseSkaterRecords endpoint:  
+
+```{r Analysis_1}
+#Pull Data from API
+gTibGretz<- as_tibble(pullNHLAPI("FranchiseSkaterRecords"))
+
+#Flag the records that are associated with Wayne Gretzky
+gTibGretz <- gTibGretz  %>% mutate(Gretzky = ifelse(data.lastName=="Gretzky" & data.firstName == "Wayne",
+         "Wayne Gretzky", "Rest of League"))
+```
+
+First things first, there are probably a lot of alternates, rookies, and other folks that didn't get a lot of time on the ice in this pull. Let's take a look at the distribution of games played per season and filter them out.
+
+```{r Low Playtime}
+gTibGretz<- gTibGretz %>% mutate (GamesPerSeason = data.gamesPlayed / data.seasons)
+g <- ggplot(data = gTibGretz, mapping = aes(x = GamesPerSeason))
+g+ geom_histogram(binwidth = 1)+ggtitle("Games Per Season for Player Franchise Records")
+
+#It's a fairly uniform density, but it looks like a second mode starts around 30 games.
+#Let's filter out entries with <30 games/ season
+gTibGretz <- gTibGretz %>% filter(GamesPerSeason >= 30)
+```  
+
+Ok, now let's figure out how scoring goals correlates to penalty time.  
+```{r Penalty vs Scoring}
+#Scatterplot to evaluate bivariate relationship
+g<- ggplot(data = gTibGretz, mapping = aes (x= data.mostPenaltyMinutesOneSeason, y = data.mostGoalsOneSeason))
+g+geom_point(mapping = (aes(colour = data.positionCode, shape = Gretzky, size = Gretzky))) + 
+  ggtitle("Personal Bests at a Franchise, Goals vs Penalty Time by Player, All Time")
+```
+We see that Wayne had a clearly phenomenal tenure at one of his franchises, apparently still being the all time scoring leader for goals in a regular season by a significant margin across all franchises.  He was also apparently very good at not getting caught checking people, as his maximum penalty time at that franchise was less than any other center who scored more than 63 goals in one season.  
+
+It also looks like there are four different clusters of exceptional players.  We have the Gretzky Group, who are  covert and high-scoring. These players score over 63 times in a season and have stayed under 100 minutes of penalties in a season. We also have the stadium fillers, this group is aggressive but score goals in the process.  They hang out in the penalty box 200-300 minutes in a season while scoring more than 38 goals in their best seasons.  Franchise owners probably love them, coaches probably hate them.  Second to last we have the defense and left wingers.  These guys just like hitting people and presumably remember to clear the puck from time to time.  Finally, we have some guy who managed to rack up 6 hours of penalty time in a single season -- one whole hour more than any other player has ever been tolerated by their coach.  Dave Schultz, from -- you guessed it -- Philadelphia.  
+
+Here's the top 6 players for penalty times in a season:
+
+```{r Max Penalty}
+#Players with the most penalty minutes in a single season.
+kable(head(gTibGretz%>% select(data.firstName, data.lastName, data.franchiseName, data.mostPenaltyMinutesOneSeason,            data.mostPenaltyMinutesSeasonIds)%>% arrange(desc((data.mostPenaltyMinutesOneSeason)))))
+```
+Alright, back to Wayne Gretzky.  We just saw that he was a center. How many skaters from different positions are we comparing against? We wouldn't want to compare that position against a defenseman for scoring. Let's generate average penalty time per game and and average goals per game to see how the different positions compare.
+
+```{r Numerical Summaries}
+#Mutate in Avg Penalty Time and Avg Goals per Game at a franchise
+gTibGretz <-gTibGretz %>% mutate( penaltyMinPerGame = data.penaltyMinutes / data.gamesPlayed,
+                                   goalsPerGame = data.goals/data.gamesPlayed)
+
+gTibPositionSummary<- gTibGretz %>% group_by(data.positionCode, Gretzky) %>% 
+  summarise(nPlayerFranchiseObs = n(), avgGoalsPerGame=mean(goalsPerGame),
+            stdDevGoals = sd(goalsPerGame), avgPenaltyBoxPerGame = mean(penaltyMinPerGame),
+            stdDevPenaltyBoxPerGame = sd(penaltyMinPerGame))
+
+gTibPositionSummary2<- gTibGretz %>% group_by(data.positionCode) %>% 
+  summarise(nPlayerFranchiseObs = n(), avgGoalsPerGame=mean(goalsPerGame),
+            stdDevGoals = sd(goalsPerGame), avgPenaltyBoxPerGame = mean(penaltyMinPerGame),
+            stdDevPenaltyBoxPerGame = sd(penaltyMinPerGame))
+
+#Barchart vs Position
+g<- ggplot(data = gTibPositionSummary, mapping= aes(x = data.positionCode,
+                                        y = nPlayerFranchiseObs, fill = data.positionCode))
+g + geom_bar( stat = 'identity' ) + ggtitle('Count of players vs position') +
+  ylab('Number of Players This Position') + xlab('Position')
+
+#Performance Summary for each position
+kable(gTibPositionSummary, digits = 3)
+```
+From that quick summary, we see that Centers, Left Wingers, and Right Wingers are all roughly consistent for number of points scored.  Defensemen understandably score far less.  Just from the numerical summary, we do see that Gretzky averages 3 standard deviations over the league average for a center, quite impressive.  The distribution of penaltybox times is far noisier with a coefficient of variance close to 1.  Gretzky is ~36% below average compared to the other Centers.
+
+Let's continue to look at where Gretzky falls relative to other offensive players.
+
+```{r boxplots}
+#Trim the defensive players from the set
+gTibGretz <- gTibGretz %>% filter(data.positionCode%in% c('C', 'R', 'L'))
+
+#Setup common variables for plotting
+g<- ggplot(data = gTibGretz, mapping = aes(x = Gretzky, color = Gretzky))
+
+#Individual Box Plots for several metrics
+g + geom_boxplot(mapping = aes(y = goalsPerGame)) + ggtitle('Goals per Game') +
+  geom_jitter(mapping = aes(y = goalsPerGame) )
+
+g + geom_boxplot(mapping = aes(y = data.mostGoalsOneGame)) + ggtitle('Most Goals One Game') + 
+  ylab('Goals in a Single Game') + geom_jitter(mapping = aes(y = data.mostGoalsOneGame))
+
+g + geom_boxplot(mapping = aes(y = data.mostAssistsOneGame)) + ggtitle('Most Assists One Game') + 
+  ylab('Assists in a Single Game') + geom_jitter(mapping = aes(y =data.mostAssistsOneGame))
+
+g + geom_boxplot(mapping = aes(y = data.mostPointsOneGame)) + 
+  ggtitle('Most Points One Game (Goals + Assists)') + ylab('Points in a Single Game') +
+  geom_jitter(mapping = aes(y = data.mostPointsOneGame))
+
+g + geom_boxplot(mapping = aes(y = penaltyMinPerGame)) + ggtitle('Average Penalty Time per Game (minutes)') + 
+  ylab('Penalty Time per Game') + geom_jitter(mapping = aes(y = penaltyMinPerGame))
+
+```
+Clearly an exemplary player with numbers that are matched by few across his tenures at several franchises.  Let's see how his records compare to his franchises
+
+```{r Analysis_2}
+#Figure out which teams Gretzky Played on, and filter data table down to those franchises
+gGretzFranchList<- gTibGretz %>% group_by(Gretzky, data.franchiseId, data.franchiseName) %>%
+  summarise(count = n())%>%filter(Gretzky =="Wayne Gretzky")
+
+#Print the teams
+kable(gGretzFranchList%>%select(-count))
+
+#Filter skater list down to those franchises
+gdfPlayersOnGretzFranchises<-gTibGretz%>% 
+  filter(data.franchiseId %in% gGretzFranchList$data.franchiseId)
+
+#Join to Franchise Totals
+gdfGretzkyFranch<-gdfPlayersOnGretzFranchises%>%
+  inner_join(pullNHLAPI("FranchiseTotals"), by = "data.franchiseId")
+
+
+
+```
+
+
 
 Do a join -- will join gretzky records with franchise records
-create two new variables -- a) skater gretzky y/n b) some derived stats / games played metric?
-some contingency tables 
-create numerical summaries on a categorical variable
+some contingency tables -- position vs franchise
+create numerical summaries on a categorical variable -- average goals and penalty time vs franchise
 
 
 
-##Downselect to Gretzky's franchises & plot where he is relative to other skaters.
-##Pull skater data.  Create a y/n for being wayne gretzky 
 
-```{r Analysis}
-gTibGretz<- as_tibble(pullNHLAPI("FranchiseSkaterRecords")) %>% 
-  mutate(ifelse(data.lastName=="Gretzky"))
-
-gGretzRecords<- as_tibble(gdfFranSkat)%>% filter (data.lastName == "Gretzky" & data.firstName == "Wayne")
-gGretzFactor<- as_tibble(gdfFranSkat)%>% filter (data.lastName == "Gretzky" & data.firstName == "Wayne")
-```
 ##Join to overall franchise records 
 
 ## GitHub Documents
