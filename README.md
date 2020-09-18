@@ -15,11 +15,10 @@ NHL API Interface
           - [Franchise Skater Records](#franchise-skater-records)
           - [Sample NHL Records Function
             Calls](#sample-nhl-records-function-calls)
-          - [NHL Stats API Modifier
-            Helper](#nhl-stats-api-modifier-helper)
           - [NHL Stats Pull](#nhl-stats-pull)
           - [Sample calls for Stats API
             validation](#sample-calls-for-stats-api-validation)
+      - [Wrapper Function](#wrapper-function)
           - [Wrapper Function to Combine Previous
             Endpoints](#wrapper-function-to-combine-previous-endpoints)
           - [Wrapper Validation Calls](#wrapper-validation-calls)
@@ -306,8 +305,8 @@ gdfFranSkatNumber<-getFranchiseSkaterRecords(aFranchiseId = 2)
 gdfFranSkatTeam<-getFranchiseSkaterRecords(aTeamId = 2)
 ```
 
-### NHL Stats API Modifier Helper
-
+\#\#Functions to contact the NHL Stats API  
+\#\#\# NHL Stats API Modifier Helper  
 Modifiers on the Stats API are less consistent. This function takes easy
 hints in `aExpand` and turns them into the appropriate URL suffix.
 
@@ -414,6 +413,8 @@ gdfTeamStatsn<-getTeamStats(aFranchiseId = 2)
 gdfTeamStatso<-getTeamStats(aTeamId = 2)
 gdfTeamStatsp<-getTeamStats()
 ```
+
+## Wrapper Function
 
 ### Wrapper Function to Combine Previous Endpoints
 
@@ -538,14 +539,15 @@ in their best seasons. Franchise owners probably love them, coaches
 probably hate them. Second to last we have the defense and left wingers.
 These guys just like hitting people and presumably remember to clear the
 puck from time to time. Finally, we have some guy who managed to rack up
-6 hours of penalty time in a single season – one whole hour more than
-any other player has ever been tolerated by their coach. Dave Schultz,
-from – you guessed it – Philadelphia.
+6 hours of penalty time in a single season – I guess the coach didn’t
+want to sit next to him on the bench. Dave Schultz, from – you guessed
+it – Philadelphia.
 
 Here’s the top 6 players for penalty times in a season:
 
 ``` r
-kable(head(gTibGretz%>% select(data.firstName, data.lastName, data.franchiseName, data.mostPenaltyMinutesOneSeason,            data.mostPenaltyMinutesSeasonIds)%>% arrange(desc((data.mostPenaltyMinutesOneSeason)))),
+kable(head(gTibGretz%>% select(data.firstName, data.lastName, data.franchiseName, data.mostPenaltyMinutesOneSeason,
+            data.mostPenaltyMinutesSeasonIds)%>% arrange(desc((data.mostPenaltyMinutesOneSeason)))),
       format = "html",caption = "Top 6 Players - Penalty Minutes in 1 Season")
 ```
 
@@ -808,10 +810,11 @@ Dallas Stars
 ## Performance vs Position Played
 
 Alright, back to Wayne Gretzky. We just saw that he was a center. How
-many skaters from different positions are we comparing against? We
-wouldn’t want to compare that position against a defenseman for scoring.
-Let’s generate average penalty time per game and and average goals per
-game to see how the different positions compare.
+many skaters from different positions are we comparing against? There
+are the offensive players (center, left wing, and right wing) We
+wouldn’t want to compare that position against a defenseman for
+scoring. Let’s generate average penalty time per game and and average
+goals per game to see how the different positions compare.
 
 ``` r
 #Mutate in Avg Penalty Time and Avg Goals per Game at a franchise
@@ -1360,7 +1363,8 @@ gTibFranchSumm <- gTibGretzkyFranch %>% group_by(Gretzky) %>%
     ## `summarise()` ungrouping output (override with `.groups` argument)
 
 ``` r
-kable(gTibFranchSumm, digits = 1,format = "html", caption = "Average Franchise Records for Teams Gretzky Has Not (Rest of League) and Has (Wayne Gretzky) Played for")
+kable(gTibFranchSumm, digits = 1,format = "html",
+      caption = "Average Franchise Records for Teams Gretzky Has Not (Rest of League) and Has (Wayne Gretzky) Played for")
 ```
 
 <table>
@@ -1539,7 +1543,7 @@ Wayne Gretzky
 </table>
 
 ``` r
-g<- ggplot(data = gTibGretzkyFranch, mapping = aes(x=Gretzky))
+g<- ggplot(data = gTibGretzkyFranch, mapping = aes(x=Gretzky, color = Gretzky))
 
 g+geom_boxplot(mapping = aes(y = data.mostGoals)) + ggtitle("Most Franchise Goals in a Season -- All Time") + 
   geom_jitter(mapping =aes(y=data.mostGoals)) 
@@ -1552,10 +1556,11 @@ g+geom_boxplot(mapping = aes(y = data.mostWins)) + ggtitle("Most Franchise Wins 
   geom_jitter(mapping =aes(y=data.mostWins)) + ylab('Most Wins')
 ```
 
-![](README_files/figure-gfm/Analysis_2-2.png)<!-- --> Implied in these
-plots is the idea that Wayne Gretzky was playing in his franchises
-during all of their best years, which may be a stretch. We’ve not
-actually limited to the seasons where Gretzky was playing for these
+![](README_files/figure-gfm/Analysis_2-2.png)<!-- -->
+
+Implied in these plots is the idea that Wayne Gretzky was playing in his
+franchises during all of their best years, which may be a stretch. We’ve
+not actually limited to the seasons where Gretzky was playing for these
 franchises – we’re looking at all time records. Still, I’d bet an
 all-time leading scorer was on the roster for at least of those
 franchise goal records. For wins in a season, it looks like Gretzky’s
