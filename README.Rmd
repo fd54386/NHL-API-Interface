@@ -1,8 +1,10 @@
 ---
-title: "Untitled"
-output: github_document:
-    toc: true
+title: "NHL API Interface"
+output: 
+  github_document:
+    toc: TRUE
     toc_depth: 3
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,14 +15,14 @@ Link to github repository
 
 ## Required Packages  
 
-```{r setup packages results='hide'}
+```{r setup packages, results="hide", message = FALSE}
 library(tidyverse)
 library(httr)
 library(jsonlite)
 library(knitr)
 ```
 
-## Write functions to contact the NHL Records API  
+# Functions to contact the NHL Records API  
 Note -- to help with ease of tracking variable scope -- function arguments have the letter 'a' for a prefix, variables local to the function have an 'f' for a prefix.  Global variables have a 'g' prefix.
 ```{r Filter Functions}
 
@@ -184,30 +186,31 @@ return(fDF)
 ```
 
 ```{r TestRecordsAPI}
-gdfFranchiseAll<-getFranchiseInfo()
-gdfFranchiseName<-getFranchiseInfo(aName="Devils")
-gdfFranchiseNumber<-getFranchiseInfo(aFranchiseID = 2)
-gdfFranchiseTeam<-getFranchiseInfo(aTeamID = 2)
+#Available for validation
+#gdfFranchiseAll<-getFranchiseInfo()
+#gdfFranchiseName<-getFranchiseInfo(aName="Devils")
+#gdfFranchiseNumber<-getFranchiseInfo(aFranchiseID = 2)
+#gdfFranchiseTeam<-getFranchiseInfo(aTeamID = 2)
 
-gdfFranTotal<-getFranchiseTotals()
-gdfFranTotalName<-getFranchiseTotals(aName="Devils")
-gdfFranTotalNumber<-getFranchiseTotals(aFranchiseID = 2)
-gdfFranTotalTeam<-getFranchiseTotals(aTeamID = 2)
+#gdfFranTotal<-getFranchiseTotals()
+#gdfFranTotalName<-getFranchiseTotals(aName="Devils")
+#gdfFranTotalNumber<-getFranchiseTotals(aFranchiseID = 2)
+#gdfFranTotalTeam<-getFranchiseTotals(aTeamID = 2)
 
-gdfFranSeas<-getFranchiseSeasonRecords()
-gdfFranSeasName<-getFranchiseSeasonRecords(aName="Devils")
-gdfFranSeasNumber<-getFranchiseSeasonRecords(aFranchiseID = 2)
-gdfFranSeasTeam<-getFranchiseSeasonRecords(aTeamID = 2)
+#gdfFranSeas<-getFranchiseSeasonRecords()
+#gdfFranSeasName<-getFranchiseSeasonRecords(aName="Devils")
+#gdfFranSeasNumber<-getFranchiseSeasonRecords(aFranchiseID = 2)
+#gdfFranSeasTeam<-getFranchiseSeasonRecords(aTeamID = 2)
 
-gdfFranGoal<-getFranchiseGoalieRecords()
-gdfFranGoalName<-getFranchiseGoalieRecords(aName="Devils")
-gdfFranGoalNumber<-getFranchiseGoalieRecords(aFranchiseID = 2)
-gdfFranGoalTeam<-getFranchiseGoalieRecords(aTeamID = 2)
+#gdfFranGoal<-getFranchiseGoalieRecords()
+#gdfFranGoalName<-getFranchiseGoalieRecords(aName="Devils")
+#gdfFranGoalNumber<-getFranchiseGoalieRecords(aFranchiseID = 2)
+#gdfFranGoalTeam<-getFranchiseGoalieRecords(aTeamID = 2)
 
-gdfFranSkat<-getFranchiseSkaterRecords()
-gdfFranSkatName<-getFranchiseSkaterRecords(aName="Devils")
-gdfFranSkatNumber<-getFranchiseSkaterRecords(aFranchiseID = 2)
-gdfFranSkatTeam<-getFranchiseSkaterRecords(aTeamID = 2)
+#gdfFranSkat<-getFranchiseSkaterRecords()
+#gdfFranSkatName<-getFranchiseSkaterRecords(aName="Devils")
+#gdfFranSkatNumber<-getFranchiseSkaterRecords(aFranchiseID = 2)
+#gdfFranSkatTeam<-getFranchiseSkaterRecords(aTeamID = 2)
 
 ```
 ```{r Stats Filter}
@@ -400,11 +403,6 @@ gTibPositionSummary<- gTibGretz %>% group_by(data.positionCode, Gretzky) %>%
             stdDevGoals = sd(goalsPerGame), avgPenaltyBoxPerGame = mean(penaltyMinPerGame),
             stdDevPenaltyBoxPerGame = sd(penaltyMinPerGame))
 
-gTibPositionSummary2<- gTibGretz %>% group_by(data.positionCode) %>% 
-  summarise(nPlayerFranchiseObs = n(), avgGoalsPerGame=mean(goalsPerGame),
-            stdDevGoals = sd(goalsPerGame), avgPenaltyBoxPerGame = mean(penaltyMinPerGame),
-            stdDevPenaltyBoxPerGame = sd(penaltyMinPerGame))
-
 #Barchart vs Position
 g<- ggplot(data = gTibPositionSummary, mapping= aes(x = data.positionCode,
                                         y = nPlayerFranchiseObs, fill = data.positionCode))
@@ -443,57 +441,50 @@ g + geom_boxplot(mapping = aes(y = penaltyMinPerGame)) + ggtitle('Average Penalt
   ylab('Penalty Time per Game') + geom_jitter(mapping = aes(y = penaltyMinPerGame))
 
 ```
-Clearly an exemplary player with numbers that are matched by few across his tenures at several franchises.  Let's see how his records compare to his franchises
+Clearly an exemplary player with numbers that are matched by few across his tenures at several franchises.  Let's see how his franchises performed
 
 ```{r Analysis_2}
 #Figure out which teams Gretzky Played on, and filter data table down to those franchises
-gGretzFranchList<- gTibGretz %>% group_by(Gretzky, data.franchiseId, data.franchiseName) %>%
-  summarise(count = n())%>%filter(Gretzky =="Wayne Gretzky")
+gTibGretzFranchList<- gTibGretz %>% group_by(Gretzky, data.franchiseId, data.franchiseName) %>%
+  summarise(offensiveSkaterCount = n(), player.gamesPlayed = max(data.gamesPlayed))
 
 #Print the teams
-kable(gGretzFranchList%>%select(-count))
+kable(gTibGretzFranchList%>%select(-offensiveSkaterCount)%>%filter(Gretzky =="Wayne Gretzky"))
 
-#Filter skater list down to those franchises
-gdfPlayersOnGretzFranchises<-gTibGretz%>% 
-  filter(data.franchiseId %in% gGretzFranchList$data.franchiseId)
+#Join our Gretzky decoder to the franchise totals
+gTibGretzkyFranch<-gTibGretzFranchList%>%
+  inner_join(pullNHLAPI("FranchiseSeasonRecords"), by = "data.franchiseId")
 
-#Join to Franchise Totals
-gdfGretzkyFranch<-gdfPlayersOnGretzFranchises%>%
-  inner_join(pullNHLAPI("FranchiseTotals"), by = "data.franchiseId")
+gTibFranchSumm <- gTibGretzkyFranch %>% group_by(Gretzky) %>%
+  summarise(franchiseCount = n(), averageMostGoals = mean(data.mostGoals), 
+            stdDevMostGoals = sd(data.mostGoals), averageMostWins = mean(data.mostWins),
+            stdDevMostWins = sd(data.mostWins), averagePenaltyTime = mean(data.mostPenaltyMinutes),
+            stdDevPenaltyTime = sd(data.mostPenaltyMinutes))
 
+kable(gTibFranchSumm, digits = 1)
+
+g<- ggplot(data = gTibGretzkyFranch, mapping = aes(x=Gretzky))
+
+g+geom_boxplot(mapping = aes(y = data.mostGoals)) + ggtitle("Most Franchise Goals in a Season -- All Time") + 
+  geom_jitter(mapping =aes(y=data.mostGoals)) 
+
+g+geom_boxplot(mapping = aes(y = data.mostWins)) + ggtitle("Most Franchise Wins in a Season -- All Time") + 
+  geom_jitter(mapping =aes(y=data.mostWins)) + ylab('Most Wins')
 
 
 ```
+These plots are a stretch, since we're not actually limited to the seasons where Gretzky was and was not playing for these franchises -- we're looking at all time records.  Still, I'd bet an all-time leading scorer was on the roster for at least of those franchise goal records.  For wins in a season, it looks like Gretzky's best team is in the top 7 while the others are more typical.
 
+For one last look at his influence, let's see how many skaters were named Wayne in the 2000s.
 
+```{r Named Wayne}
+#Pull a fresh, untrimmed set of skater data.  
+gTibWayne<- as_tibble(pullNHLAPI("FranchiseSkaterRecords"))
+#Add two factor columns for name and rough date ~20 years after Gretzky joined the Oilers
+gTibWayne<- gTibWayne %>%  mutate(NamedWayne = ifelse(data.firstName == 'Wayne',"Wayne", "Not Wayne"), 
+         After2000 = ifelse(as.numeric(substr(data.mostPointsSeasonIds,1,4)) > 2000, 
+                            "Later than 2000", "Before 2000"))
 
-Do a join -- will join gretzky records with franchise records
-some contingency tables -- position vs franchise
-create numerical summaries on a categorical variable -- average goals and penalty time vs franchise
-
-
-
-
-##Join to overall franchise records 
-
-## GitHub Documents
-
-This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
-
-## Including Code
-
-You can include R code in the document as follows:
-
-```{r cars}
-summary(cars)
+table(gTibWayne$NamedWayne, gTibWayne$After2000)
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Well, it looks like the name Wayne has not shot up in popularity in the years since Gretzky became famous.  I guess that just makes Gretzky that much more unique.
