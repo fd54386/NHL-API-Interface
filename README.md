@@ -305,8 +305,10 @@ gdfFranSkatNumber<-getFranchiseSkaterRecords(aFranchiseId = 2)
 gdfFranSkatTeam<-getFranchiseSkaterRecords(aTeamId = 2)
 ```
 
-\#\#Functions to contact the NHL Stats API  
-\#\#\# NHL Stats API Modifier Helper  
+## Functions to contact the NHL Stats API  
+
+### NHL Stats API Modifier Helper  
+
 Modifiers on the Stats API are less consistent. This function takes easy
 hints in `aExpand` and turns them into the appropriate URL suffix.
 
@@ -1562,7 +1564,7 @@ Implied in these plots is the idea that Wayne Gretzky was playing in his
 franchises during all of their best years, which may be a stretch. We’ve
 not actually limited to the seasons where Gretzky was playing for these
 franchises – we’re looking at all time records. Still, I’d bet an
-all-time leading scorer was on the roster for at least of those
+all-time leading scorer was on the roster for at least one of those
 franchise goal records. For wins in a season, it looks like Gretzky’s
 best team is in the top 7 while the others are more typical.
 
